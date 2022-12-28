@@ -2,15 +2,18 @@
 # Импорт и подготовка к работе.
 import telebot
 from telebot import types
+import requests
+import json
 from config import tg_bot_token
+from config import api
 bot = telebot.TeleBot(tg_bot_token)
 
 # Структура.
 keys = {
-    'рубли': 'rub',
-    'доллар': 'usd',
-    'евро': 'eur',
-    'тенге': 'kz'
+    'рубль': 'RUB',
+    'доллар': 'USD',
+    'евро': 'EUR',
+    'тенге': 'KZT'
 }
 
 
@@ -35,7 +38,13 @@ def values(message: telebot.types.Message):
 
 @bot.message_handler(content_types=['text'])
 def convertation(message: telebot.types.Message):
-    bot.send_message()
+    quote, base, amount = message.text.split(' ')
+    r = requests.get(f'https://api.apilayer.com/exchangerates_data/live?base={keys[quote]}&symbols={keys[base]}',
+                     headers={
+                         'apikey': 'erM4zMROlySHFOgvYr8gXNDBwNdPO3UE'
+                     })
+    text = json.loads(r.content)[keys[base]]
+    bot.send_message(message.chat.id, text)
 
 
 bot.polling(none_stop=True)
