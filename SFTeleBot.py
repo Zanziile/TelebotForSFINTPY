@@ -18,7 +18,7 @@ def start(message: telebot.types.Message):
 def help(message: telebot.types.Message):
     bot.send_message(message.chat.id, f'Для работы с ботом необходимо ввести 3 параметра:\n1.Введите валюту которую нужно\
                                        конвертировать\n2.Введите валюту конвертации\n3.Введите количество\
-                                      \n\nПример ввода\nrub\nusd\n100', parse_mode='html')
+                                      \n\nПример ввода\nрубли\nтенге\n100', parse_mode='html')
 
 
 @bot.message_handler(commands=['values'])  #Валюты.
@@ -31,16 +31,21 @@ def values(message: telebot.types.Message):
 
 @bot.message_handler(content_types=['text'])
 def convertation(message: telebot.types.Message):
-    vals = message.text.split(' ')
+    try:
+        vals = message.text.split(' ')
 
-    if len(vals) != 3:
-        raise ConvertionException('Слишком много параметров')
+        if len(vals) != 3:
+            raise ConvertionException('Слишком много параметров.')
 
-    base, quote, amount = vals
-    total_base = CurrencyConverter.convert(quote, base, amount)
-
-    text = f'{base} в {quote} в количестве {amount} \nИтог {total_base}'
-    bot.send_message(message.chat.id, text)
+        base, quote, amount = vals
+        new_price = CurrencyConverter.convert(quote, base, amount)
+    except ConvertionException as e:
+        bot.reply_to(message, f'Ошибка пользователя.\n{e}')
+    except Exception as e:
+        bot.reply_to(message, f'Не удалось обработать команду\n{e}')
+    else:
+        text = f'{base} в {quote} в количестве {amount} \nИтог {new_price}'
+        bot.send_message(message.chat.id, text)
 
 
 bot.polling(none_stop=True)

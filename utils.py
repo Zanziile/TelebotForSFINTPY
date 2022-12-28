@@ -26,12 +26,13 @@ class CurrencyConverter:
         try:
             amount = float(amount)
         except ValueError:
-            raise ConvertionException(f'Не удалось обработать валюту {amount}')
+            raise ConvertionException(f'Не удалось обработать количество {amount}')
 
-        url = f'https://api.apilayer.com/exchangerates_data/convert?to={base_ticker}&from={quote_ticker}&amount={amount}'
+        url = f'https://api.apilayer.com/exchangerates_data/convert?to={quote_ticker}&from={base_ticker}&amount={amount}'
         headers = {'apikey': api}
 
         r = requests.request('GET', url, headers=headers)
-        total_base = json.loads(r.text)
+        total_base = json.loads(r.content)
+        new_price = total_base['result']
 
-        return total_base
+        return new_price
